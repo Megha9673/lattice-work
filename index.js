@@ -94,7 +94,7 @@ async function patient_mail(n){
 }
 /************************************************************************************************************************************/ 
 
-schedule.scheduleJob('* * * * 4', function(){
+schedule.scheduleJob({hour: 14, minute: 30, dayOfWeek: 5}, function(){
 	console.log('The answer to life, the universe, and everything!');
 	var sql = "SELECT * FROM consultation_master"
 	con.query(sql, function (err, result) {
