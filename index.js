@@ -1,17 +1,17 @@
 
-var schedule = require('node-schedule');
-var express = require('express');
-var app = express();
-var mysql = require('mysql');
-var jwt = require('jsonwebtoken')
-var bodyParser = require('body-parser')
-var nodemailer = require("nodemailer");
+const schedule = require('node-schedule');
+const express = require('express');
+const app = express();
+const mysql = require('mysql');
+const jwt = require('jsonwebtoken')
+const bodyParser = require('body-parser')
+const nodemailer = require("nodemailer");
 
-var con = mysql.createConnection({
+const con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
-  database: "sampleDb"
+  password: "password",
+  database: "sampledb"
 });
 
 app.use(bodyParser.urlencoded({extended:true}));
@@ -25,8 +25,8 @@ con.connect(function(err) {
 });
 
 async function main(n, msg){
-	var email
-	var sql = "SELECT * FROM doctor_master where ID="+n;
+	let email
+	let sql = "SELECT * FROM doctor_master where ID="+n;
 	con.query(sql,function(err,result){
 		if(err) throw err;
 		email = result[0].email
@@ -34,34 +34,31 @@ async function main(n, msg){
 		let transporter = nodemailer.createTransport({
 		service:'gmail',
 		auth: {
-		  user: 'megha9673@gmail.com', 
-		  pass: ''
+		  user: 'hellomegha9673@gmail.com', 
+		  pass: 'PAV4@bhaji'
 		}
 		});
 		console.log(email)
 		let mailOptions = {
-			from: 'megha9673@gmail.com', // sender address
+			from: 'hellomegha9673@gmail.com', // sender address
 			to: email, // list of receivers
-			subject: "Hello ✔", // Subject line
+			subject: "Feedback received", // Subject line
 			text: msg, // plain text body
 			html: '<p>Your html here</p>'
 		};
 		console.log(mailOptions)
 		transporter.sendMail(mailOptions, function (err, info) {
 			if(err)
-			 console.log('err')
+			 console.log(err)
 			else
 			 console.log("email sent");
 		});
 	})	
-
-
-
 }
 
 async function patient_mail(n){
-	var email;
-	var sql = "SELECT * FROM patient_master WHERE id="+n;
+	let email;
+	let sql = "SELECT * FROM patient_master WHERE id="+n;
 	con.query(sql,function(err,result){
 		if(err) throw err;
 		email = result[0].email
@@ -73,7 +70,7 @@ async function patient_mail(n){
 		service:'gmail',
 		auth: {
 		  user: 'megha9673@gmail.com', 
-		  pass: ''
+		  pass: 'm12e4g6h7a2'
 		}
 	});
 
@@ -94,19 +91,19 @@ async function patient_mail(n){
 }
 /************************************************************************************************************************************/ 
 
-schedule.scheduleJob({hour: 14, minute: 30, dayOfWeek: 5}, function(){
+schedule.scheduleJob({hour: 12, minute: 45, dayOfWeek: 5}, function(){
 	console.log('The answer to life, the universe, and everything!');
-	var sql = "SELECT * FROM consultation_master"
+	let sql = "SELECT * FROM consultation_master"
 	con.query(sql, function (err, result) {
     	if (err) throw err;
     	console.log(result);
     	console.log(result[0].status);
-    	var d1 = new Date();
+    	let d1 = new Date();
     	result.forEach(function(r){
     		if(r.status==0){
-    			var d2 = r.consultation_date
-    			var timeDiff = Math.abs(d2.getTime() - d1.getTime());
-				var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+    			let d2 = r.consultation_date
+    			let timeDiff = Math.abs(d2.getTime() - d1.getTime());
+				let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
 				if(diffDays >28 ){
 					main(r.doctor_id,"feedback not filled");
 				}
@@ -123,29 +120,79 @@ schedule.scheduleJob({hour: 14, minute: 30, dayOfWeek: 5}, function(){
 
 
 /***********************************************************************************************************************************/
+let auth_key = '';
+let body_content = {title:'test',body:'notification body'}
+
+app.post('/login',(req,res)=>{
+	con.query('insert into device_details(device_id,name) values(?,?)',[req.body.device_id,req.body.name],(err,rows)=>{
+		if(!err){
+			res.json({
+				'message':'Logged in'
+			})
+		} else{
+			res.json({
+				'message': 'error'
+			})
+		}
+	})
+})
+
 
 app.get('/home',function(req,res){
 	console.log('11111111')
-	res.json({
-    	'message': 'registered'
-    })
+	request.post({
+		json:true,
+		headers:{'content-type':'application/json','Authorization':'key=' + auth_key},
+		url:'https://fcm.googleapis.com/fcm/send',
+		body: body_content
+	},(err,response,body)=>{
+		console.log(response)
+		if(err){
+			res.json({
+				'message': 'error'
+			})
+		} else{
+			res.json({
+				'message': 'success'
+			})
+		}
+	})
 })
 
 app.post('/api/register/doctor',function(req,res){
-	console.log('222222222')
-	var sql = "INSERT INTO doctor_master (email, password, name) VALUES ('"+req.body.email+"', '"+req.body.password+"','"+ req.body.full_name+"')";
-	con.query(sql, function (err, result) {
-    	if (err) throw err;
-    	console.log("1 record inserted");
-    });
-    res.json({
-    	'message': 'registered'
-    })
-
+	let sql = 'CALL checkemail(?)'
+	let c,response
+	con.query(sql,[req.body.email], function(err, result) {
+		if(err){
+			console.log(err)
+			response='cannot regidter doctor'
+		}
+		else{
+			console.log(JSON.stringify(result[0][0]))
+			c= JSON.stringify(result[0][0])
+			console.log(c[12])
+			//console.log(JSON.parse(result[0][0]))
+			if(c[12]>0){
+				console.log(c[12])
+				response='Email already exists'
+			}
+			else{
+				let sql = "INSERT INTO doctor_master (email, password, name) VALUES ('"+req.body.email+"', '"+req.body.password+"','"+ req.body.full_name+"')";
+				con.query(sql, function (err, result) {
+			    	if (err) throw err;
+			    	console.log("1 record inserted");
+			    });
+			    response='registered'
+			}
+		}
+		res.json({
+			'message':response
+		})
+	})		
 })
 
 app.post('/api/register/patient',function(req,res){
-	var sql = "INSERT INTO patient_master (email, password, name) VALUES ('"+req.body.email+"', '"+req.body.password+"','"+ req.body.full_name+"')";
+	let sql = "INSERT INTO patient_master (email, password, name) VALUES ('"+req.body.email+"', '"+req.body.password+"','"+ req.body.full_name+"')";
 	con.query(sql, function (err, result) {
     	if (err) throw err;
     	console.log("1 record inserted");
@@ -157,7 +204,7 @@ app.post('/api/register/patient',function(req,res){
 })
 
 app.post('/api/consult',function(req,res){
-	var sql = "INSERT INTO consultation_master (doctor_id, patient_id, status) VALUES ('"+req.query.d_id+"', '"+req.query.p_id+"', 0)";
+	let sql = "INSERT INTO consultation_master (doctor_id, patient_id, status) VALUES ('"+req.query.d_id+"', '"+req.query.p_id+"', 0)";
 	con.query(sql, function (err, result) {
     	if (err) throw err;
     	console.log("1 record inserted");
@@ -168,7 +215,7 @@ app.post('/api/consult',function(req,res){
 })
 
 app.post('/api/feedback',function(req,res){
-	var sql = "SELECT status from consultation_master WHERE doctor_id="+req.query.d_id+" and patient_id="+req.query.p_id;
+	let sql = "SELECT status from consultation_master WHERE doctor_id="+req.query.d_id+" and patient_id="+req.query.p_id;
 	con.query(sql, function (err, result) {
     	if (err) throw err;
     	result.status = 1
@@ -178,4 +225,4 @@ app.post('/api/feedback',function(req,res){
 	res.json('response send to doctor')
 })
 
-app.listen(3000)
+app.listen(3000);
