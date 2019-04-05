@@ -14,7 +14,7 @@ const con = mysql.createConnection({
   database: "pushnotify"
 });
 
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.json({extended:true}));
 
 con.connect(function(err) {
   if (err) {
@@ -121,7 +121,7 @@ schedule.scheduleJob({hour: 12, minute: 45, dayOfWeek: 5}, function(){
 
 /***********************************************************************************************************************************/
 let auth_key = '';
-let body_content = {title:'test',body:'notification body'}
+let body_content = {to:'',notification:{title:'test',body:'notification body'}}
 
 app.post('/login',(req,res)=>{
 	con.query('insert into device_details(device_id,name) values(?,?)',[req.body.device_id,req.body.name],(err,rows)=>{
@@ -139,7 +139,6 @@ app.post('/login',(req,res)=>{
 
 
 app.get('/home',function(req,res){
-	console.log('11111111')
 	request.post({
 		json:true,
 		headers:{'content-type':'application/json','Authorization':'key=' + auth_key},
