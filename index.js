@@ -8,10 +8,10 @@ const bodyParser = require('body-parser')
 const nodemailer = require("nodemailer");
 
 const con = mysql.createConnection({
-  host: "localhost",
+  host: "159.89.173.34",
   user: "root",
-  password: "password",
-  database: "sampledb"
+  password: "glowship",
+  database: "pushnotify"
 });
 
 app.use(bodyParser.urlencoded({extended:true}));
