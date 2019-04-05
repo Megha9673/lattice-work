@@ -130,6 +130,7 @@ app.post('/login',(req,res)=>{
 				'message':'Logged in'
 			})
 		} else{
+			console.log(err)
 			res.json({
 				'message': 'Unable to connect'
 			})
