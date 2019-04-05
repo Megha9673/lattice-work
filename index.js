@@ -140,14 +140,14 @@ app.post('/login',(req,res)=>{
 
 
 app.get('/home/:id',function(req,res){
-	con.query('select device_id from device_details where id=?',[req.params.id],(err,rows)=>{
+	con.query('select device_id,name from device_details where id=?',[req.params.id],(err,rows)=>{
 		if(err){
 			res.json({
 				'message':'error'
 			})
 		} else{
 			console.log(rows)
-			body_content = {"to":`${rows[0].device_id}`,"notification":{"title":"test","body":"notification body"}}
+			body_content = {"to":`${rows[0].device_id}`,"data":{"title":req.params.id+"Proposal ready for review","body":"For the residence of <Homeowner Name>"+`${rows[0].name}`,"key":`${req.params.id}`}}
 			console.log(body_content)
 			request.post({
 				json:true,
@@ -171,13 +171,29 @@ app.get('/home/:id',function(req,res){
 	
 })
 
+app.get('/profile/:id',(req,res)=>{
+	con.query('select id,name from device_details where id=?',[req.params.id],(err,rows)=>{
+		if(err){
+			res.json({
+				'data': {},
+				'message':'error'
+			})
+		} else{
+			res.json({
+				'data': rows,
+				'message':'success'
+			})	
+		}
+	})		
+})
+
 app.post('/api/register/doctor',function(req,res){
 	let sql = 'CALL checkemail(?)'
 	let c,response
 	con.query(sql,[req.body.email], function(err, result) {
 		if(err){
 			console.log(err)
-			response='cannot regidter doctor'
+			response='cannot register doctor'
 		}
 		else{
 			console.log(JSON.stringify(result[0][0]))
