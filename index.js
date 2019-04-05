@@ -1,4 +1,4 @@
-
+const request = require('request');
 const schedule = require('node-schedule');
 const express = require('express');
 const app = express();
@@ -120,8 +120,8 @@ schedule.scheduleJob({hour: 12, minute: 45, dayOfWeek: 5}, function(){
 
 
 /***********************************************************************************************************************************/
-let auth_key = '';
-let body_content = {to:'',notification:{title:'test',body:'notification body'}}
+let auth_key = 'AAAAW26r0P8:APA91bFFrBgPAhRYea-4_pH3cpelL4fnf-mz08-ue3DV9mRT83P1zVsTqGSVmohIVLiN2Jl8dlgjZTbs-IMg5-ZRqPyPCs0S2ousHHbsZlHFDGmL6OnUqGeFvO1kxUqgUBt4LHZZlJCy';
+let body_content 
 
 app.post('/login',(req,res)=>{
 	con.query('insert into device_details(device_id,name) values(?,?)',[req.body.device_id,req.body.name],(err,rows)=>{
@@ -139,24 +139,36 @@ app.post('/login',(req,res)=>{
 })
 
 
-app.get('/home',function(req,res){
-	request.post({
-		json:true,
-		headers:{'content-type':'application/json','Authorization':'key=' + auth_key},
-		url:'https://fcm.googleapis.com/fcm/send',
-		body: body_content
-	},(err,response,body)=>{
-		console.log(response)
+app.get('/home/:id',function(req,res){
+	con.query('select device_id from device_details where id=?',[req.params.id],(err,rows)=>{
 		if(err){
 			res.json({
-				'message': 'error'
+				'message':'error'
 			})
 		} else{
-			res.json({
-				'message': 'success'
+			console.log(rows)
+			body_content = {"to":`${rows[0].device_id}`,"notification":{"title":"test","body":"notification body"}}
+			console.log(body_content)
+			request.post({
+				json:true,
+				headers:{'content-type':'application/json','Authorization':'key=' + auth_key},
+				url:'https://fcm.googleapis.com/fcm/send',
+				body: body_content
+			},(err,response,body)=>{
+				console.log(body)
+				if(err){
+					res.json({
+						'message': 'error'
+					})
+				} else{
+					res.json({
+						'message': 'success'
+					})
+				}
 			})
 		}
 	})
+	
 })
 
 app.post('/api/register/doctor',function(req,res){
