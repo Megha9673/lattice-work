@@ -147,7 +147,7 @@ app.get('/home/:id',function(req,res){
 			})
 		} else{
 			console.log(rows)
-			body_content = {"to":`${rows[0].device_id}`,"data":{"title":req.params.id+"Proposal ready for review","body":"For the residence of <Homeowner Name>"+`${rows[0].name}`,"key":`${req.params.id}`}}
+			body_content = {"to":`${rows[0].device_id}`,"data":{"title":`${req.params.id}`+"Proposal ready for review","body":"For the residence of <Homeowner Name>"+`${rows[0].name}`,"key":`${req.params.id}`}}
 			console.log(body_content)
 			request.post({
 				json:true,
